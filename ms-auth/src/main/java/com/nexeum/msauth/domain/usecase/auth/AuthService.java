@@ -1,0 +1,74 @@
+package com.nexeum.msauth.domain.usecase.auth;
+
+import com.mongodb.DuplicateKeyException;
+import com.mongodb.client.MongoClient;
+import com.nexeum.msauth.domain.model.auth.Auth;
+import com.nexeum.msauth.domain.usecase.auth.repository.AuthRepository;
+import com.nexeum.msauth.infrastructure.adapter.mongo.MongoAuthRepository;
+import com.nexeum.msauth.infrastructure.adapter.redis.RedisAuthRepository;
+import com.nexeum.msauth.infrastructure.helper.jwt.JwtGenerator;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
+import org.slf4j.Logger;
+
+@Service
+public class AuthService implements AuthRepository {
+    private final MongoAuthRepository mongoAuthRepository;
+    private final ReactiveCrudRepository<Auth, String> redisAuthRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private final JwtGenerator jwtGenerator;
+    private final MongoClient mongo;
+
+
+    @Autowired
+    public AuthService(MongoAuthRepository mongoAuthRepository, ReactiveCrudRepository<Auth, String> redisAuthRepository, JwtGenerator jwtGenerator, MongoClient mongo) {
+        this.mongoAuthRepository = mongoAuthRepository;
+        this.redisAuthRepository = redisAuthRepository;
+        this.jwtGenerator = jwtGenerator;
+        this.mongo = mongo;
+    }
+
+    @Override
+    public Mono<String> login(Auth auth) {
+        log.info("Initiating login for email: {}", auth.getEmail());
+        return mongoAuthRepository.findByEmail(auth.getEmail())
+                .flatMap(existingAuth -> {
+                    if (existingAuth.getPassword().equals(auth.getPassword())) {
+                        log.info("User logged in");
+                        String jwt = jwtGenerator.generateJwt(auth.getEmail());
+                        return redisAuthRepository.save(auth).thenReturn(jwt);
+                    } else {
+                        log.error("Invalid password for email: {}", auth.getEmail());
+                        return Mono.error(new IllegalArgumentException("Invalid password"));
+                    }
+                })
+                .onErrorResume(e -> {
+                    log.error("Error during login for email: {}", auth.getEmail(), e);
+                    return Mono.error(e);
+                });
+    }
+
+    @Override
+    public Mono<String> register(Auth auth) {
+        log.info("Initiating registration for email: {}", auth.getEmail());
+        return mongoAuthRepository.findByEmail(auth.getEmail())
+                .flatMap(existingAuth -> {
+                    log.error("Email already exists: {}", auth.getEmail());
+                    return Mono.just("Email already exists");
+                })
+                .switchIfEmpty(
+                        mongoAuthRepository.save(auth)
+                                .doOnSuccess(result -> log.info("Registration successful for email: {}", auth.getEmail()))
+                                .doOnError(e -> log.error("Error during registration for email: {}", auth.getEmail(), e))
+                                .then(Mono.just("Registration successful for email: " + auth.getEmail()))
+                                .onErrorResume(e -> {
+                                    log.error("Error during registration for email: {}", auth.getEmail(), e);
+                                    return Mono.just("Error during registration: " + e.getMessage());
+                                })
+                );
+    }
+}
