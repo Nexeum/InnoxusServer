@@ -10,7 +10,16 @@ The project follows two different architectural patterns for its two main compon
 
 - The Go component with Revel follows the Model-View-Controller (MVC) pattern. This pattern separates the application into three interconnected components, allowing for efficient code organization and modular design.
 
+<p align="center">
+  <img width="357" alt="image" src="https://github.com/Nexeum/InnoxusServer/assets/54515356/6b3592cc-d0c4-4ad7-9dc3-172296d03dc4">
+</p>
+
 - The Java component with Spring Boot follows the Domain-Driven Design (DDD) and Hexagonal Architecture (also known as Ports and Adapters) patterns. DDD focuses on the core domain and domain logic, while Hexagonal Architecture aims to create loosely coupled application components.
+
+<p align="center">
+  <img width="357" alt="image" src="https://github.com/Nexeum/InnoxusServer/assets/54515356/537e5798-acd7-42f0-a39e-d449de2f4ce4">
+</p>
+
 
 ## Technologies
 
