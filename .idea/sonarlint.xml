@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SonarLintProjectSettings">
+    <option name="moduleMapping">
+      <map>
+        <entry key="ms-auth" value="ms-user" />
+        <entry key="ms-bucket" value="ms-package" />
+        <entry key="ms-workspace" value="ms-room" />
+      </map>
+    </option>
+  </component>
+</project>

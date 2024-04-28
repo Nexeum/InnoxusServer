@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.32/17d46b3e205515e1e8efd3ee4d57ce8018914163/lombok-1.18.32.jar" />
+        </processorPath>
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="InnoxusServer" target="17" />
+      <module name="InnoxusServer.main" target="17" />
+      <module name="InnoxusServer.test" target="17" />
+      <module name="ms-package" target="21" />
+      <module name="ms-package.main" target="21" />
+      <module name="ms-package.test" target="21" />
+      <module name="ms-room.main" target="17" />
+      <module name="ms-room.test" target="17" />
+      <module name="ms-user.main" target="17" />
+      <module name="ms-user.test" target="17" />
+      <module name="ms-virtualization" target="17" />
+      <module name="ms-virtualization.main" target="17" />
+      <module name="ms-virtualization.test" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
