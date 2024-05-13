@@ -4,11 +4,15 @@ import com.nexeum.msauth.domain.model.auth.Auth;
 import com.nexeum.msauth.domain.usecase.auth.repository.AuthRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.HealthEndpoint;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.server.ServerResponse;
+
 import reactor.core.publisher.Mono;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
+        RequestMethod.DELETE })
 @RestController
 @RequestMapping("/v1/auth")
 public class RestAuthController {
@@ -16,7 +20,6 @@ public class RestAuthController {
     private final AuthRepository authRepository;
     private final HealthEndpoint healthEndpoint;
 
-    @Autowired
     public RestAuthController(AuthRepository authRepository, HealthEndpoint healthEndpoint) {
         this.authRepository = authRepository;
         this.healthEndpoint = healthEndpoint;
@@ -27,12 +30,6 @@ public class RestAuthController {
         return Mono.just(ResponseEntity.ok(healthEndpoint.health()));
     }
 
-    @PostMapping("/login")
-    public Mono<ResponseEntity<String>> login(@RequestBody Auth auth) {
-        return authRepository.login(auth)
-                .map(ResponseEntity::ok)
-                .onErrorReturn(ResponseEntity.badRequest().build());
-    }
 
     @PostMapping("/register")
     public Mono<ResponseEntity<String>> register(@RequestBody Auth auth) {
@@ -41,6 +38,12 @@ public class RestAuthController {
                 .onErrorReturn(ResponseEntity.badRequest().body("Error during registration"));
     }
 
+    @PostMapping("/login")
+    public Mono<ResponseEntity<String>> login(@RequestBody Auth auth) {
+        return authRepository.login(auth)
+                .map(jwt -> ResponseEntity.ok().body(jwt))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage())));
+    }
     @PostMapping("/validate")
     public Mono<ResponseEntity<Boolean>> validateJwt(@RequestBody String token) {
         return authRepository.validateJwt(token)
