@@ -5,10 +5,12 @@ import com.nexeum.msauth.domain.usecase.auth.repository.AuthRepository;
 import com.nexeum.msauth.infrastructure.adapter.mongo.MongoAuthRepository;
 import com.nexeum.msauth.infrastructure.helper.jwt.JwtGenerator;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService implements AuthRepository {
@@ -17,7 +19,6 @@ public class AuthService implements AuthRepository {
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     private final JwtGenerator jwtGenerator;
 
-    @Autowired
     public AuthService(MongoAuthRepository mongoAuthRepository, JwtGenerator jwtGenerator) {
         this.mongoAuthRepository = mongoAuthRepository;
         this.jwtGenerator = jwtGenerator;
@@ -28,19 +29,19 @@ public class AuthService implements AuthRepository {
         log.info("Initiating login for email: {}", auth.getEmail());
         return mongoAuthRepository.findByEmail(auth.getEmail())
                 .flatMap(existingAuth -> {
-                    if (existingAuth.getPassword().equals(auth.getPassword())) {
+                    if (existingAuth.getEmail() == null) {
+                        log.error("Email not found: {}", auth.getEmail());
+                        return Mono.error(new RuntimeException("Email not found"));
+                    } else if (!existingAuth.getPassword().equals(auth.getPassword())) {
+                        log.error("Invalid password for email: {}", auth.getEmail());
+                        return Mono.error(new RuntimeException("Invalid password"));
+                    } else {
                         log.info("User logged in");
                         String jwt = jwtGenerator.generateJwt(auth.getEmail());
                         return Mono.just(jwt);
-                    } else {
-                        log.error("Invalid password for email: {}", auth.getEmail());
-                        return Mono.error(new IllegalArgumentException("Invalid password"));
                     }
                 })
-                .onErrorResume(e -> {
-                    log.error("Error during login for email: {}", auth.getEmail(), e);
-                    return Mono.error(e);
-                });
+                .switchIfEmpty(Mono.error(new RuntimeException("Email not found")));
     }
 
     @Override
