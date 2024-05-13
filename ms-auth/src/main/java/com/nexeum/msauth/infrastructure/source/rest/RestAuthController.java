@@ -2,12 +2,10 @@ package com.nexeum.msauth.infrastructure.source.rest;
 
 import com.nexeum.msauth.domain.model.auth.Auth;
 import com.nexeum.msauth.domain.usecase.auth.repository.AuthRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.server.ServerResponse;
 
 import reactor.core.publisher.Mono;
 
