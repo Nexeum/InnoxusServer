@@ -8,8 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/v1/auth")
 public class RestAuthController {
 
     private final AuthRepository authRepository;
@@ -38,5 +39,11 @@ public class RestAuthController {
         return authRepository.register(auth)
                 .map(message -> ResponseEntity.ok().body(message))
                 .onErrorReturn(ResponseEntity.badRequest().body("Error during registration"));
+    }
+
+    @PostMapping("/validate")
+    public Mono<ResponseEntity<Boolean>> validateJwt(@RequestBody String token) {
+        return authRepository.validateJwt(token)
+                .map(isValid -> ResponseEntity.ok(isValid));
     }
 }
