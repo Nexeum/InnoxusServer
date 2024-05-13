@@ -6,4 +6,5 @@ import reactor.core.publisher.Mono;
 public interface AuthRepository {
     Mono<String> login(Auth auth);
     Mono<String> register(Auth auth);
+    Mono<Boolean> validateJwt(String token);
 }
