@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import java.util.Collections;
 
 import java.util.List;
 
@@ -34,6 +35,24 @@ public class BucketService implements BucketRepository {
     public Mono<Bucket> getBucket(String name) {
         return mongoBucketRepository.findByName(name)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Bucket not found")));
+    }
+
+    @Override
+    public Mono<List<Bucket>> getBuckets() {
+        return mongoBucketRepository.findAll()
+            .collectList()
+            .onErrorResume(e -> {
+                log.error("Error occurred while fetching buckets", e);
+                return Mono.error(new Error("Error occurred while fetching buckets", e));
+            })
+            .flatMap(buckets -> {
+                if (buckets.isEmpty()) {
+                    log.info("No buckets found");
+                    return Mono.just(Collections.emptyList());
+                } else {
+                    return Mono.just(buckets);
+                }
+            });
     }
 
     @Override
