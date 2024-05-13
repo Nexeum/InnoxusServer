@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 @RestController
 @RequestMapping("/v1/buckets")
 public class RestBucketController {
@@ -31,6 +32,14 @@ public class RestBucketController {
         return bucketRepository.getBucket(name)
                 .map(ResponseEntity::ok)
                 .onErrorResume(IllegalArgumentException.class, e -> Mono.just(new ResponseEntity<>(null, HttpStatus.NOT_FOUND)));
+    }
+
+    @GetMapping("/get")
+    public Mono<ResponseEntity<List<Bucket>>> getBuckets() {
+        return bucketRepository.getBuckets()
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build())
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null)));
     }
 
     @PutMapping("/update")
