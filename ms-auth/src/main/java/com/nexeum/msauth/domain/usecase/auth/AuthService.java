@@ -47,18 +47,14 @@ public class AuthService implements AuthRepository {
         return mongoAuthRepository.findByEmail(auth.getEmail())
                 .flatMap(existingAuth -> {
                     log.error("Email already exists: {}", auth.getEmail());
-                    return Mono.just("Email already exists");
+                    return Mono.<String>error(new RuntimeException("Email already exists"));
                 })
                 .switchIfEmpty(
                     mongoAuthRepository.save(auth)
                         .doOnSuccess(result -> log.info("Registration successful for email: {}", auth.getEmail()))
                         .doOnError(e -> log.error("Error during registration for email: {}", auth.getEmail(), e))
                         .then(Mono.just("Registration successful for email: " + auth.getEmail()))
-                )
-                .onErrorResume(e -> {
-                    log.error("Error during registration for email: {}", auth.getEmail(), e);
-                    return Mono.just("Error during registration: " + e.getMessage());
-                });
+                );
     }
 
     @Override
