@@ -3,9 +3,11 @@ package com.nexeum.msauth.domain.model.auth;
 import lombok.Data;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@TypeAlias("auth")
+@Document
+@TypeAlias("")
 public class Auth {
     private String username;
     @Indexed(unique = true)
