@@ -33,7 +33,7 @@ public class RestAuthController {
     public Mono<ResponseEntity<String>> register(@RequestBody Auth auth) {
         return authRepository.register(auth)
                 .map(message -> ResponseEntity.ok().body(message))
-                .onErrorReturn(ResponseEntity.badRequest().body("Error during registration"));
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage())));
     }
 
     @PostMapping("/login")
