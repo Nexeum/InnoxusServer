@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/buckets")
 public class RestBucketController {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RestBucketController.class);
 
     private final BucketRepository bucketRepository;
 
@@ -27,12 +28,14 @@ public class RestBucketController {
                 .defaultIfEmpty(ResponseEntity.badRequest().build());
     }
 
-    @GetMapping("/get/{name}")
-    public Mono<ResponseEntity<Bucket>> getBucket(@PathVariable String name) {
-        return bucketRepository.getBucket(name)
+    @PostMapping("/get")
+    public Mono<ResponseEntity<Bucket>> getBucket(@RequestBody Bucket bucket) {
+        log.info("getBucket: " + bucket.getName());
+        return bucketRepository.getBucket(bucket.getName())
                 .map(ResponseEntity::ok)
-                .onErrorResume(IllegalArgumentException.class, e -> Mono.just(new ResponseEntity<>(null, HttpStatus.NOT_FOUND)));
-    }
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null)));
+
+    } 
 
     @GetMapping("/get")
     public Mono<ResponseEntity<List<Bucket>>> getBuckets() {
