@@ -1,6 +1,7 @@
 package com.nexeum.msauth.domain.usecase.auth;
 
 import com.nexeum.msauth.domain.model.auth.Auth;
+import com.nexeum.msauth.domain.model.jwt.Token;
 import com.nexeum.msauth.domain.usecase.auth.repository.AuthRepository;
 import com.nexeum.msauth.infrastructure.adapter.mongo.MongoAuthRepository;
 import com.nexeum.msauth.infrastructure.helper.jwt.JwtGenerator;
@@ -58,8 +59,14 @@ public class AuthService implements AuthRepository {
     }
 
     @Override
-    public Mono<Boolean> validateJwt(String token) {
-        return Mono.fromCallable(() -> jwtGenerator.validateJwt(token))
+    public Mono<Boolean> validateJwt(Token token) {
+        return Mono.fromCallable(() -> jwtGenerator.validateJwt(token.getToken()))
                    .onErrorReturn(false);
+    }
+
+    @Override
+    public Mono<String> getEmailFromJwt(Token token) {
+        return Mono.fromCallable(() -> jwtGenerator.getEmailFromJwt(token.getToken()))
+                   .onErrorReturn("Error getting email from JWT");
     }
 }
