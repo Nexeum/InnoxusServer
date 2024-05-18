@@ -1,6 +1,7 @@
 package com.nexeum.msauth.infrastructure.source.rest;
 
 import com.nexeum.msauth.domain.model.auth.Auth;
+import com.nexeum.msauth.domain.model.jwt.Token;
 import com.nexeum.msauth.domain.usecase.auth.repository.AuthRepository;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.http.HttpStatus;
@@ -43,8 +44,15 @@ public class RestAuthController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage())));
     }
     @PostMapping("/validate")
-    public Mono<ResponseEntity<Boolean>> validateJwt(@RequestBody String token) {
+    public Mono<ResponseEntity<Boolean>> validateJwt(@RequestBody Token token) {
         return authRepository.validateJwt(token)
                 .map(isValid -> ResponseEntity.ok(isValid));
+    }
+
+    @PostMapping("/email")
+    public Mono<ResponseEntity<String>> getEmailFromJwt(@RequestBody Token token) {
+        return authRepository.getEmailFromJwt(token)
+                .map(email -> ResponseEntity.ok(email))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage())));
     }
 }
