@@ -52,4 +52,23 @@ public class JwtGenerator {
             return false;
         }
     }
+
+    public String getEmailFromJwt(String token) {
+        try {
+            log.info("Getting email from token");
+
+            token = token.trim();
+
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return claims.getSubject();
+        } catch (Exception e) {
+            log.error("Error parsing JWT", e);
+            return null;
+        }
+    }
 }
