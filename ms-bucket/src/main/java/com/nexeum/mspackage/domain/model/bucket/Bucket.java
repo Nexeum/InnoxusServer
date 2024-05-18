@@ -13,4 +13,5 @@ public class Bucket {
     private String description;
     private List<String> files;
     private String[] languages;
+    private String owner;
 }
