@@ -9,7 +9,6 @@ public class Bucket {
     @Indexed(unique = true)
     private String id;
     private String name;
-    private int stars;
     private List<String> branches;
     private String description;
     private List<String> files;
