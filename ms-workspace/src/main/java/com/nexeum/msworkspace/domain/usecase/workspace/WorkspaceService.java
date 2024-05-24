@@ -12,6 +12,7 @@ import java.util.Optional;
 @Service
 public class WorkspaceService implements WorkspaceRepository {
 
+    private static final String WORKSPACE_NOT_FOUND = "Workspace not found";
     private final MongoWorkspaceRepository workspaceRepository;
 
     public WorkspaceService(MongoWorkspaceRepository workspaceRepository) {
@@ -29,19 +30,16 @@ public class WorkspaceService implements WorkspaceRepository {
         return Mono.justOrEmpty(workspace)
                 .flatMap(workspaceRepository::save)
                 .switchIfEmpty(Mono.error(new Exception("Workspace could not be created")))
-                .onErrorResume(e -> {
-                    return Mono.error(new Exception("Error creating workspace", e));
-                });
+                .onErrorResume(e -> Mono.error(new Exception("Error creating workspace", e)));
+                
     }
 
     @Override
     public Mono<Workspace> getWorkspace(String id) {
         return Mono.justOrEmpty(id)
                 .flatMap(workspaceRepository::findById)
-                .switchIfEmpty(Mono.error(new Exception("Workspace not found")))
-                .onErrorResume(e -> {
-                    return Mono.error(new Exception("Error retrieving workspace", e));
-                });
+                .switchIfEmpty(Mono.error(new Exception(WORKSPACE_NOT_FOUND)))
+                .onErrorResume(e -> Mono.error(new Exception("Error retrieving workspace", e)));
     }
 
     @Override
@@ -54,22 +52,16 @@ public class WorkspaceService implements WorkspaceRepository {
                             .ifPresent(existingWorkspace::setDescription);
                     return workspaceRepository.save(existingWorkspace);
                 })
-                .switchIfEmpty(Mono.error(new Exception("Workspace not found")))
-                .onErrorResume(e -> {
-                    return Mono.error(new Exception("Error updating workspace", e));
-                });
+                .switchIfEmpty(Mono.error(new Exception(WORKSPACE_NOT_FOUND)))
+                .onErrorResume(e -> Mono.error(new Exception("Error updating workspace", e)));
     }
 
     @Override
     public Mono<String> deleteWorkspace(String id) {
         return workspaceRepository.findById(id)
-                .flatMap(workspace -> {
-                    return workspaceRepository.delete(workspace)
-                            .then(Mono.just("Workspace deleted successfully"));
-                })
-                .switchIfEmpty(Mono.error(new Exception("Workspace not found")))
-                .onErrorResume(e -> {
-                    return Mono.error(new Exception("Error deleting workspace", e));
-                });
+            .flatMap(workspace -> workspaceRepository.delete(workspace)
+                .then(Mono.just("Workspace deleted successfully")))
+            .switchIfEmpty(Mono.error(new Exception(WORKSPACE_NOT_FOUND)))
+            .onErrorResume(e -> Mono.error(new Exception("Error deleting workspace", e)));
     }
 }
