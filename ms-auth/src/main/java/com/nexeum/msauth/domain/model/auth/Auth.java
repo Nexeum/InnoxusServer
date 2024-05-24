@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Document
-@TypeAlias("")
+@TypeAlias("auth")
 public class Auth {
     private String username;
     @Indexed(unique = true)
