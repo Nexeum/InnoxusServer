@@ -10,4 +10,5 @@ public interface AuthRepository {
     Mono<String> register(Auth auth);
     Mono<Boolean> validateJwt(Token token);
     Mono<String> getEmailFromJwt(Token token);
+    Mono<String> getUserData(Auth auth);
 }
