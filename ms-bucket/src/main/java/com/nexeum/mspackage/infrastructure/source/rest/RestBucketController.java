@@ -30,7 +30,7 @@ public class RestBucketController {
 
     @PostMapping("/get")
     public Mono<ResponseEntity<Bucket>> getBucket(@RequestBody Bucket bucket) {
-        log.info("getBucket: " + bucket.getName());
+        log.info("getBucket: {}", bucket.getName());
         return bucketRepository.getBucket(bucket.getName())
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null)));
