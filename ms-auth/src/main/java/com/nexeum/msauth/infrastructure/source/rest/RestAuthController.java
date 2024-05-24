@@ -46,13 +46,20 @@ public class RestAuthController {
     @PostMapping("/validate")
     public Mono<ResponseEntity<Boolean>> validateJwt(@RequestBody Token token) {
         return authRepository.validateJwt(token)
-                .map(isValid -> ResponseEntity.ok(isValid));
+                .map(ResponseEntity::ok);
     }
 
     @PostMapping("/email")
     public Mono<ResponseEntity<String>> getEmailFromJwt(@RequestBody Token token) {
         return authRepository.getEmailFromJwt(token)
-                .map(email -> ResponseEntity.ok(email))
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage())));
+    }
+
+    @PostMapping("/user")
+    public Mono<ResponseEntity<String>> getUserData(@RequestBody Auth auth) {
+        return authRepository.getUserData(auth)
+                .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage())));
     }
 }
