@@ -23,7 +23,7 @@ public class RestWorkspaceController {
     }
 
     @GetMapping("/all")
-    public Mono<?> getAllWorkspaces() {
+    public Mono<Object> getAllWorkspaces() {
         return workspaceService.getAllWorkspaces()
                 .collectList()
                 .flatMap(workspaces -> workspaces.isEmpty() ? Mono.just("No workspaces found") : Mono.just(workspaces))
