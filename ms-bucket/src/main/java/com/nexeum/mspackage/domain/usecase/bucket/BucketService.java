@@ -15,6 +15,7 @@ import java.util.List;
 public class BucketService implements BucketRepository {
 
     private static final Logger log = LoggerFactory.getLogger(BucketService.class);
+    private static final String BUCKET_NOT_FOUND = "Bucket not found";
     private final MongoBucketRepository mongoBucketRepository;
 
     public BucketService(MongoBucketRepository mongoBucketRepository) {
@@ -34,7 +35,7 @@ public class BucketService implements BucketRepository {
     @Override
     public Mono<Bucket> getBucket(String name) {
         return mongoBucketRepository.findByName(name)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Bucket not found")));
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(BUCKET_NOT_FOUND)));
     }
 
     @Override
@@ -62,16 +63,14 @@ public class BucketService implements BucketRepository {
                     log.info("Bucket found: {}", bucket.getName());
                     return mongoBucketRepository.save(existingBucket).thenReturn("Bucket updated");
                 })
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Bucket not found")));
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(BUCKET_NOT_FOUND)));
     }
 
     @Override
     public Mono<String> deleteBucket(String name) {
         return mongoBucketRepository.findByName(name)
-                .flatMap(existingBucket -> {
-                    return mongoBucketRepository.delete(existingBucket).thenReturn("Bucket deleted");
-                })
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Bucket not found")));
+                .flatMap(existingBucket -> mongoBucketRepository.delete(existingBucket).thenReturn("Bucket deleted"))
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(BUCKET_NOT_FOUND)));
     }
 
     @Override
@@ -81,6 +80,6 @@ public class BucketService implements BucketRepository {
                     existingBucket.getFiles().addAll(files);
                     return mongoBucketRepository.save(existingBucket).thenReturn("Files uploaded to bucket");
                 })
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Bucket not found")));
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(BUCKET_NOT_FOUND)));
     }
 }
