@@ -59,14 +59,21 @@ public class AuthService implements AuthRepository {
     }
 
     @Override
-    public Mono<Boolean> validateJwt(Token token) {
-        return Mono.fromCallable(() -> jwtGenerator.validateJwt(token.getToken()))
+    public Mono<Boolean> validateJwt(Token accessToken) {
+        return Mono.fromCallable(() -> jwtGenerator.validateJwt(accessToken.getAccessToken()))
                    .onErrorReturn(false);
     }
 
     @Override
-    public Mono<String> getEmailFromJwt(Token token) {
-        return Mono.fromCallable(() -> jwtGenerator.getEmailFromJwt(token.getToken()))
+    public Mono<String> getEmailFromJwt(Token accessToken) {
+        return Mono.fromCallable(() -> jwtGenerator.getEmailFromJwt(accessToken.getAccessToken()))
                    .onErrorReturn("Error getting email from JWT");
+    }
+
+    @Override
+    public Mono<String> getUserData(Auth auth) {
+        return mongoAuthRepository.findByEmail(auth.getEmail())
+                .map(Auth::getUsername)
+                .onErrorReturn("Error getting user data");
     }
 }
