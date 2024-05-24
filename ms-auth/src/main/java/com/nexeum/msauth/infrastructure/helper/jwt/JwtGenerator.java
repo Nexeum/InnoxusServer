@@ -1,6 +1,5 @@
 package com.nexeum.msauth.infrastructure.helper.jwt;
 
-import com.nexeum.msauth.domain.usecase.auth.AuthService;
 import com.nexeum.msauth.infrastructure.helper.key.SecretKeyGenerator;
 
 import io.jsonwebtoken.Claims;
@@ -20,14 +19,14 @@ public class JwtGenerator {
 
     private final SecretKey secretKey;
 
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private static final Logger log = LoggerFactory.getLogger(JwtGenerator.class);
 
     public JwtGenerator() {
         this.secretKey = Keys.hmacShaKeyFor(new SecretKeyGenerator().generateSecretKey().getBytes());
     }
 
     public String generateJwt(String email) {
-        long expirationTime = 1000 * 60 * 60 * 24;
+        long expirationTime = 1000L * 60 * 60 * 24;
 
         return Jwts.builder()
                 .subject(email)
@@ -44,9 +43,11 @@ public class JwtGenerator {
                     .build()
                     .parseSignedClaims(token);
 
-            log.info("Token expiration: {}", claimsJws.getPayload().getExpiration());
-            log.info(claimsJws.getPayload().getExpiration().after(new Date()) ? "Token is valid" : "Token is expired");
-            return claimsJws.getPayload().getExpiration().after(new Date());
+            Date expiration = claimsJws.getPayload().getExpiration();
+            log.info("Token expiration: {}", expiration);
+            boolean isValid = expiration != null && expiration.after(new Date());
+            log.info(isValid ? "Token is valid" : "Token is expired");
+            return isValid;
         } catch (JwtException e) {
             log.error("Error validating token", e);
             return false;
